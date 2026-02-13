@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import {Router} from 'express';
 import {createMatchSchema, listMatchesQuerySchema} from "../validation/matches.js";
 import {db} from "../db/db.js";
 import {matches} from "../db/schema.js";
@@ -12,7 +12,7 @@ export const matchRouter = Router();
 matchRouter.get('/', async (req, res) => {
   const parsed = listMatchesQuerySchema.safeParse(req.query);
 
-  if(!parsed.success) {
+  if (!parsed.success) {
     return res.status(400).json({error: 'Invalid query', details: JSON.stringify(parsed.error.issues)});
   }
 
@@ -30,7 +30,7 @@ matchRouter.get('/', async (req, res) => {
 matchRouter.post('/', async (req, res) => {
   const parsed = createMatchSchema.safeParse(req.body);
 
-  if(!parsed.success) {
+  if (!parsed.success) {
     return res.status(400).json({error: 'Invalid payload', details: JSON.stringify(parsed.error.issues)});
   }
 
@@ -45,6 +45,12 @@ matchRouter.post('/', async (req, res) => {
       awayScore: awayScore ?? 0,
       status: getMatchStatus(startTime, endTime),
     }).returning()
+
+    try {
+      res.app.locals.broadcastMatchCreated(event);
+    } catch (err) {
+      console.error('Failed to broadcast match creation:', err);
+    }
 
     res.status(201).json({data: event});
   } catch (error) {
