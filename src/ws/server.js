@@ -61,6 +61,7 @@ function handleMessage(socket, data) {
     message = JSON.parse(data.toString());
   } catch (error) {
     sendJson(socket, { type: 'error', message: 'Invalid JSON payload.' });
+    return;
   }
 
   if(message.type === 'subscribe' && Number.isInteger(message.matchId)) {
@@ -72,7 +73,7 @@ function handleMessage(socket, data) {
 
   if(message.type === 'unsubscribe' && Number.isInteger(message.matchId)) {
     unsubscribe(message.matchId, socket);
-    socket.subscriptions.deleted(message.matchId);
+    socket.subscriptions.delete(message.matchId);
     sendJson(socket, { type: 'unsubscribed', matchId: message.matchId });
   }
 }
